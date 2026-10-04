@@ -1,414 +1,897 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AlphaLogix TMS</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b1020">
-<style>
-:root{
-  --bg:#0b1020; --panel:#121a2d; --panel2:#18223a; --text:#eef3ff; --muted:#9fb0d0;
-  --accent:#4f8cff; --good:#39d98a; --warn:#ffcc66; --bad:#ff6b6b; --line:#2b3857;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;background:rgba(11,16,32,.97);z-index:10}
-.brand h1{margin:0;font-size:20px}.brand small{color:var(--muted)}
-nav{display:flex;gap:8px;flex-wrap:wrap}
-button,.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 13px;border-radius:10px;cursor:pointer;font-weight:650}
-button:hover,.btn:hover{filter:brightness(1.12)}
-button.primary{background:var(--accent);border-color:var(--accent)}
-button.danger{background:#5a2430;border-color:#7a3340}
-main{padding:22px;max-width:1400px;margin:auto}
-.tab{display:none}.tab.active{display:block}
-.grid{display:grid;gap:14px}.cards{grid-template-columns:repeat(4,minmax(0,1fr))}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
-.card h3{margin:0 0 8px;font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.metric{font-size:28px;font-weight:800}.sub{color:var(--muted);font-size:12px;margin-top:5px}
-.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:26px 0 12px}
-.section-head h2{margin:0;font-size:18px}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
-table{width:100%;border-collapse:collapse;min-width:980px;background:var(--panel)}
-th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}
-th{color:var(--muted);font-size:12px;text-transform:uppercase;background:#10182a;position:sticky;top:0}
-tr:last-child td{border-bottom:none}
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid var(--line)}
-.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
-.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-input,select,textarea{width:100%;background:#0e1628;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 11px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.calc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
-.calc .mini{padding:12px;background:#0e1628;border:1px solid var(--line);border-radius:10px}
-.calc .mini b{display:block;font-size:18px;margin-top:4px}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;padding:20px;overflow:auto}
-.modal.show{display:block}
-.modal-card{max-width:950px;margin:30px auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
-.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.modal-head h2{margin:0}
-.note{padding:12px 14px;border:1px solid var(--line);background:#0e1628;border-radius:10px;color:var(--muted);font-size:13px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.right{text-align:right}
-.small{font-size:12px;color:var(--muted)}
-.kpi-good{border-color:#225d49}.kpi-bad{border-color:#6b3038}.kpi-warn{border-color:#745b2d}
-@media(max-width:950px){.cards,.form-grid,.calc,.two{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){header{align-items:flex-start;flex-direction:column}.cards,.form-grid,.calc,.two{grid-template-columns:1fr}main{padding:14px}.metric{font-size:24px}}
-</style>
-</head>
-<body>
-<header>
-  <div class="brand">
-    <h1>AlphaLogix TMS</h1>
-    <small>Transportation Management System — Web App v2</small>
-  </div>
-  <nav>
-    <button onclick="showTab('dashboard')">Dashboard</button>
-    <button onclick="showTab('loads')">Loads</button>
-    <button onclick="showTab('fuel')">Fuel / MPG</button>
-    <button onclick="showTab('settings')">Settings</button>
-  </nav>
-</header>
 
-<main>
-<section id="dashboard" class="tab active">
-  <div class="cards grid">
-    <div class="card"><h3>Gross Revenue</h3><div id="kGross" class="metric">$0</div><div class="sub">All saved loads</div></div>
-    <div class="card"><h3>Dispatcher Pay</h3><div id="kDispatcher" class="metric">$0</div><div class="sub">10% by default</div></div>
-    <div class="card"><h3>Driver Pay</h3><div id="kDriver" class="metric">$0</div><div class="sub">$0.60 / total mile by default</div></div>
-    <div class="card"><h3>Estimated Net</h3><div id="kNet" class="metric">$0</div><div class="sub">After driver, dispatcher, fuel & other costs</div></div>
-  </div>
+  <meta charset="UTF-8">
 
-  <div class="section-head"><h2>Operations snapshot</h2></div>
-  <div class="cards grid">
-    <div class="card"><h3>Active Loads</h3><div id="kActive" class="metric">0</div></div>
-    <div class="card"><h3>Total Miles</h3><div id="kMiles" class="metric">0</div></div>
-    <div class="card"><h3>Fleet MPG</h3><div id="kMpg" class="metric">—</div><div class="sub">Calculated from full-tank fuel logs</div></div>
-    <div class="card"><h3>Fuel Spend</h3><div id="kFuel" class="metric">$0</div></div>
-  </div>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <div class="section-head"><h2>Recent loads</h2><button class="primary" onclick="openLoad()">+ Add Load</button></div>
-  <div class="table-wrap"><table><thead><tr>
-    <th>Load #</th><th>Customer/Broker</th><th>Route</th><th>Status</th><th>Gross</th><th>Total Miles</th><th>Net</th>
-  </tr></thead><tbody id="recentLoads"></tbody></table></div>
-</section>
+  <meta name="theme-color" content="#0b1020">
 
-<section id="loads" class="tab">
-  <div class="section-head">
-    <h2>Loads</h2>
-    <div><button onclick="exportLoadsCsv()">Export CSV</button> <button class="primary" onclick="openLoad()">+ Add Load</button></div>
-  </div>
-  <div class="table-wrap"><table><thead><tr>
-    <th>Load #</th><th>Date</th><th>Broker / Customer</th><th>Origin → Destination</th><th>Status</th>
-    <th>Loaded</th><th>Deadhead</th><th>Gross</th><th>Dispatcher</th><th>Driver</th><th>Fuel</th><th>Net</th><th>Actions</th>
-  </tr></thead><tbody id="loadsBody"></tbody></table></div>
-</section>
+  <title>AlphaLogix TMS</title>
 
-<section id="fuel" class="tab">
-  <div class="two">
-    <div class="card">
-      <h3>Fuel & MPG tracking</h3>
-      <div class="metric" id="fuelAvgMpg">— MPG</div>
-      <div class="sub">MPG is calculated between full-tank fill-ups. Partial fills are included in the gallons used between full tanks.</div>
-    </div>
-    <div class="card">
-      <h3>Fuel cost summary</h3>
-      <div class="metric" id="fuelTotalCost">$0</div>
-      <div class="sub"><span id="fuelTotalGallons">0</span> gallons logged</div>
-    </div>
-  </div>
-  <div class="section-head">
-    <h2>Fuel log</h2>
-    <div><button onclick="exportFuelCsv()">Export CSV</button> <button class="primary" onclick="openFuel()">+ Add Fuel Entry</button></div>
-  </div>
-  <div class="note">For the most accurate MPG, enter the odometer every time you buy fuel and check “Full tank” whenever you fill completely. The system calculates tank-to-tank MPG automatically.</div>
-  <div style="height:12px"></div>
-  <div class="table-wrap"><table><thead><tr>
-    <th>Date</th><th>Truck</th><th>Odometer</th><th>Gallons</th><th>Total Cost</th><th>$/Gal</th><th>Full Tank</th><th>Calculated MPG</th><th>Load #</th><th>Actions</th>
-  </tr></thead><tbody id="fuelBody"></tbody></table></div>
-</section>
+  <link rel="manifest" href="manifest.json">
 
-<section id="settings" class="tab">
-  <div class="section-head"><h2>AlphaLogix settings</h2></div>
-  <div class="card">
-    <div class="form-grid">
-      <div><label>Dispatcher pay (% of gross load)</label><input id="sDispatch" type="number" step="0.1"></div>
-      <div><label>Driver pay ($ per total mile)</label><input id="sDriver" type="number" step="0.01"></div>
-      <div><label>Fallback MPG (optional)</label><input id="sMpg" type="number" step="0.1" placeholder="Leave blank until known"></div>
-      <div><label>Default fuel price ($/gal)</label><input id="sFuelPrice" type="number" step="0.01" placeholder="Optional"></div>
-      <div><label>Company name</label><input id="sCompany"></div>
-      <div><label>Default truck/unit</label><input id="sTruck" placeholder="e.g. Truck 1"></div>
-    </div>
-    <div class="actions"><button class="primary" onclick="saveSettings()">Save Settings</button></div>
-  </div>
-  <div style="height:14px"></div>
-  <div class="card">
-    <h3>Data backup</h3>
-    <p class="small">This prototype stores data in this browser/device. Export a backup regularly.</p>
-    <div class="actions">
-      <button onclick="exportBackup()">Export Backup</button>
-      <label class="btn" style="display:inline-block;margin:0">Import Backup<input id="importFile" type="file" accept=".json" style="display:none" onchange="importBackup(event)"></label>
-      <button class="danger" onclick="resetAll()">Erase All Data</button>
-    </div>
-  </div>
-</section>
-</main>
+  <style>
 
-<div id="loadModal" class="modal">
-  <div class="modal-card">
-    <div class="modal-head"><h2 id="loadTitle">Add Load</h2><button onclick="closeModal('loadModal')">✕</button></div>
-    <input type="hidden" id="loadId">
-    <div class="form-grid">
-      <div><label>Load #</label><input id="lNumber" placeholder="ALX-1001"></div>
-      <div><label>Date</label><input id="lDate" type="date"></div>
-      <div><label>Status</label><select id="lStatus">
-        <option>Booked</option><option>Dispatched</option><option>At Pickup</option><option>In Transit</option><option>Delivered</option><option>Invoiced</option><option>Paid</option>
-      </select></div>
-      <div><label>Customer / Broker</label><input id="lBroker"></div>
-      <div><label>Origin</label><input id="lOrigin"></div>
-      <div><label>Destination</label><input id="lDestination"></div>
-      <div><label>Truck / Unit</label><input id="lTruck"></div>
-      <div><label>Loaded miles</label><input id="lLoaded" type="number" step="1" oninput="previewLoad()"></div>
-      <div><label>Deadhead miles</label><input id="lDeadhead" type="number" step="1" oninput="previewLoad()"></div>
-      <div><label>Gross load amount ($)</label><input id="lGross" type="number" step="0.01" oninput="previewLoad()"></div>
-      <div><label>Tolls / permits ($)</label><input id="lTolls" type="number" step="0.01" oninput="previewLoad()"></div>
-      <div><label>Other expenses ($)</label><input id="lOther" type="number" step="0.01" oninput="previewLoad()"></div>
-      <div><label>Fuel price override ($/gal)</label><input id="lFuelPrice" type="number" step="0.01" placeholder="Optional" oninput="previewLoad()"></div>
-      <div><label>MPG override</label><input id="lMpg" type="number" step="0.1" placeholder="Uses tracked MPG when blank" oninput="previewLoad()"></div>
-      <div><label>Notes</label><input id="lNotes"></div>
-    </div>
-    <div class="calc">
-      <div class="mini"><span class="small">Total miles</span><b id="pMiles">0</b></div>
-      <div class="mini"><span class="small">Dispatcher pay</span><b id="pDispatcher">$0</b></div>
-      <div class="mini"><span class="small">Driver pay</span><b id="pDriver">$0</b></div>
-      <div class="mini"><span class="small">Fuel estimate</span><b id="pFuel">$0</b></div>
-      <div class="mini"><span class="small">Revenue / mile</span><b id="pRpm">$0</b></div>
-      <div class="mini"><span class="small">Estimated net</span><b id="pNet">$0</b></div>
-      <div class="mini"><span class="small">Net / mile</span><b id="pNetMile">$0</b></div>
-      <div class="mini"><span class="small">Margin</span><b id="pMargin">0%</b></div>
-    </div>
-    <div class="actions"><button class="primary" onclick="saveLoad()">Save Load</button><button onclick="closeModal('loadModal')">Cancel</button></div>
-  </div>
-</div>
+    * { box-sizing: border-box; }
 
-<div id="fuelModal" class="modal">
-  <div class="modal-card" style="max-width:760px">
-    <div class="modal-head"><h2 id="fuelTitle">Add Fuel Entry</h2><button onclick="closeModal('fuelModal')">✕</button></div>
-    <input type="hidden" id="fuelId">
-    <div class="form-grid">
-      <div><label>Date</label><input id="fDate" type="date"></div>
-      <div><label>Truck / Unit</label><input id="fTruck"></div>
-      <div><label>Odometer</label><input id="fOdo" type="number" step="1"></div>
-      <div><label>Gallons</label><input id="fGallons" type="number" step="0.001"></div>
-      <div><label>Total fuel cost ($)</label><input id="fCost" type="number" step="0.01"></div>
-      <div><label>Related Load # (optional)</label><input id="fLoad"></div>
-      <div><label>Fill type</label><select id="fFull"><option value="true">Full tank</option><option value="false">Partial fill</option></select></div>
-      <div><label>Location / Station</label><input id="fStation"></div>
-    </div>
-    <div class="actions"><button class="primary" onclick="saveFuel()">Save Fuel Entry</button><button onclick="closeModal('fuelModal')">Cancel</button></div>
-  </div>
-</div>
+    body {
 
-<script>
-const STORE='alphalogix_tms_v1';
-let db = loadDB();
+      margin: 0;
 
-function defaultDB(){
-  return {
-    settings:{dispatcherPct:10,driverRate:0.60,fallbackMpg:'',fuelPrice:'',company:'AlphaLogix Transport Solutions LLC',defaultTruck:''},
-    loads:[], fuel:[]
-  }
-}
-function loadDB(){try{return JSON.parse(localStorage.getItem(STORE))||defaultDB()}catch(e){return defaultDB()}}
-function persist(){localStorage.setItem(STORE,JSON.stringify(db));renderAll()}
-const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n||0));
-const num=n=>Number(n||0);
-const today=()=>new Date().toISOString().slice(0,10);
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 
-function showTab(id){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');renderAll()}
-function closeModal(id){document.getElementById(id).classList.remove('show')}
+      background: #0b1020;
 
-function truckMpg(truck){
-  const rows = computedFuel().filter(x=>x.truck===truck && x.mpg);
-  if(!rows.length) return null;
-  return rows.reduce((a,b)=>a+b.mpg,0)/rows.length;
-}
-function fleetMpg(){
-  const rows=computedFuel().filter(x=>x.mpg);
-  if(!rows.length) return null;
-  return rows.reduce((a,b)=>a+b.mpg,0)/rows.length;
-}
-function computedFuel(){
-  const out=[];
-  const groups={};
-  db.fuel.forEach(x=>(groups[x.truck||'']??=[]).push(x));
-  Object.values(groups).forEach(arr=>{
-    arr.sort((a,b)=>num(a.odo)-num(b.odo) || String(a.date).localeCompare(String(b.date)));
-    let prevFull=null, gallonsSinceFull=0;
-    arr.forEach(x=>{
-      gallonsSinceFull += num(x.gallons);
-      let mpg=null;
-      if(x.full && prevFull && num(x.odo)>num(prevFull.odo) && gallonsSinceFull>0){
-        mpg=(num(x.odo)-num(prevFull.odo))/gallonsSinceFull;
+      color: #eef2ff;
+
+    }
+
+    .hidden { display: none !important; }
+
+    .container {
+
+      width: min(1200px, 94%);
+
+      margin: auto;
+
+    }
+
+    header {
+
+      background: #121a2d;
+
+      border-bottom: 1px solid #29334d;
+
+      padding: 18px 0;
+
+    }
+
+    .header-row {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 15px;
+
+      flex-wrap: wrap;
+
+    }
+
+    h1, h2, h3 { margin-top: 0; }
+
+    .brand h1 {
+
+      margin: 0;
+
+      font-size: 24px;
+
+    }
+
+    .brand small { color: #9ca8c7; }
+
+    button {
+
+      border: 0;
+
+      border-radius: 9px;
+
+      padding: 11px 16px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+
+      background: #4f8cff;
+
+      color: white;
+
+    }
+
+    button.secondary {
+
+      background: #28344f;
+
+    }
+
+    button.danger {
+
+      background: #9d3945;
+
+    }
+
+    input, select, textarea {
+
+      width: 100%;
+
+      padding: 11px;
+
+      border-radius: 8px;
+
+      border: 1px solid #36415e;
+
+      background: #11182a;
+
+      color: white;
+
+      font-size: 16px;
+
+    }
+
+    label {
+
+      display: block;
+
+      color: #aeb8d1;
+
+      font-size: 13px;
+
+      margin-bottom: 5px;
+
+    }
+
+    .login {
+
+      max-width: 420px;
+
+      margin: 70px auto;
+
+      background: #121a2d;
+
+      border: 1px solid #29334d;
+
+      padding: 28px;
+
+      border-radius: 14px;
+
+    }
+
+    .login input {
+
+      margin-bottom: 14px;
+
+    }
+
+    .login-buttons {
+
+      display: flex;
+
+      gap: 10px;
+
+    }
+
+    main { padding: 25px 0 50px; }
+
+    .cards {
+
+      display: grid;
+
+      grid-template-columns: repeat(5, 1fr);
+
+      gap: 12px;
+
+      margin-bottom: 25px;
+
+    }
+
+    .card {
+
+      background: #121a2d;
+
+      border: 1px solid #29334d;
+
+      border-radius: 12px;
+
+      padding: 17px;
+
+    }
+
+    .card small {
+
+      color: #9ca8c7;
+
+    }
+
+    .card strong {
+
+      display: block;
+
+      margin-top: 7px;
+
+      font-size: 22px;
+
+    }
+
+    .toolbar {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      margin: 20px 0;
+
+      gap: 12px;
+
+      flex-wrap: wrap;
+
+    }
+
+    .table-wrap {
+
+      overflow-x: auto;
+
+      background: #121a2d;
+
+      border: 1px solid #29334d;
+
+      border-radius: 12px;
+
+    }
+
+    table {
+
+      width: 100%;
+
+      border-collapse: collapse;
+
+      min-width: 1050px;
+
+    }
+
+    th, td {
+
+      text-align: left;
+
+      padding: 12px;
+
+      border-bottom: 1px solid #29334d;
+
+      white-space: nowrap;
+
+    }
+
+    th {
+
+      color: #9ca8c7;
+
+      font-size: 12px;
+
+      text-transform: uppercase;
+
+    }
+
+    td button {
+
+      padding: 7px 10px;
+
+      margin-right: 5px;
+
+      font-size: 12px;
+
+    }
+
+    .modal {
+
+      position: fixed;
+
+      inset: 0;
+
+      background: rgba(0,0,0,.75);
+
+      overflow-y: auto;
+
+      padding: 25px 12px;
+
+      z-index: 10;
+
+    }
+
+    .form-card {
+
+      width: min(800px, 100%);
+
+      margin: auto;
+
+      background: #121a2d;
+
+      border: 1px solid #36415e;
+
+      border-radius: 14px;
+
+      padding: 22px;
+
+    }
+
+    .form-grid {
+
+      display: grid;
+
+      grid-template-columns: repeat(2, 1fr);
+
+      gap: 15px;
+
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    .form-actions {
+
+      display: flex;
+
+      justify-content: flex-end;
+
+      gap: 10px;
+
+      margin-top: 20px;
+
+    }
+
+    .rates {
+
+      background: #18233a;
+
+      border-radius: 10px;
+
+      padding: 12px;
+
+      margin-bottom: 20px;
+
+      color: #b9c5e1;
+
+    }
+
+    #userEmail {
+
+      color: #9ca8c7;
+
+      margin-right: 10px;
+
+      font-size: 14px;
+
+    }
+
+    @media (max-width: 850px) {
+
+      .cards {
+
+        grid-template-columns: repeat(2, 1fr);
+
       }
-      out.push({...x,mpg});
-      if(x.full){prevFull=x;gallonsSinceFull=0}
-    })
-  });
-  return out.sort((a,b)=>String(b.date).localeCompare(String(a.date)) || num(b.odo)-num(a.odo));
-}
-function actualFuelForLoad(loadNumber){
-  return db.fuel.filter(f=>(f.load||'').trim()===(loadNumber||'').trim()).reduce((s,x)=>s+num(x.cost),0);
-}
-function loadCalc(l){
-  const totalMiles=num(l.loaded)+num(l.deadhead);
-  const dispatcher=num(l.gross)*(num(db.settings.dispatcherPct)/100);
-  const driver=totalMiles*num(db.settings.driverRate);
-  const actualFuel=actualFuelForLoad(l.number);
-  const trackedMpg=truckMpg(l.truck)||fleetMpg();
-  const mpg=num(l.mpg)||num(trackedMpg)||num(db.settings.fallbackMpg);
-  const fuelPrice=num(l.fuelPrice)||num(db.settings.fuelPrice);
-  const estimatedFuel=(mpg>0 && fuelPrice>0)?(totalMiles/mpg)*fuelPrice:0;
-  const fuel=actualFuel>0?actualFuel:estimatedFuel;
-  const net=num(l.gross)-dispatcher-driver-fuel-num(l.tolls)-num(l.other);
-  return {totalMiles,dispatcher,driver,actualFuel,mpg,fuelPrice,estimatedFuel,fuel,net,
-    rpm:totalMiles?num(l.gross)/totalMiles:0, netMile:totalMiles?net/totalMiles:0,
-    margin:num(l.gross)?(net/num(l.gross))*100:0};
-}
 
-function openLoad(id=''){
-  const l=db.loads.find(x=>x.id===id)||{id:'',date:today(),status:'Booked',truck:db.settings.defaultTruck||''};
-  document.getElementById('loadTitle').textContent=id?'Edit Load':'Add Load';
-  const map={loadId:'id',lNumber:'number',lDate:'date',lStatus:'status',lBroker:'broker',lOrigin:'origin',lDestination:'destination',
-    lTruck:'truck',lLoaded:'loaded',lDeadhead:'deadhead',lGross:'gross',lTolls:'tolls',lOther:'other',lFuelPrice:'fuelPrice',lMpg:'mpg',lNotes:'notes'};
-  Object.entries(map).forEach(([el,k])=>document.getElementById(el).value=l[k]??'');
-  previewLoad(); document.getElementById('loadModal').classList.add('show');
-}
-function previewLoad(){
-  const l={number:v('lNumber'),truck:v('lTruck'),loaded:v('lLoaded'),deadhead:v('lDeadhead'),gross:v('lGross'),
-    tolls:v('lTolls'),other:v('lOther'),fuelPrice:v('lFuelPrice'),mpg:v('lMpg')};
-  const c=loadCalc(l);
-  set('pMiles',c.totalMiles.toLocaleString()); set('pDispatcher',money(c.dispatcher)); set('pDriver',money(c.driver));
-  set('pFuel',money(c.fuel)); set('pRpm',money(c.rpm)); set('pNet',money(c.net)); set('pNetMile',money(c.netMile));
-  set('pMargin',c.margin.toFixed(1)+'%');
-}
-function saveLoad(){
-  const id=v('loadId')||uid();
-  const l={id,number:v('lNumber').trim(),date:v('lDate'),status:v('lStatus'),broker:v('lBroker'),origin:v('lOrigin'),
-    destination:v('lDestination'),truck:v('lTruck'),loaded:num(v('lLoaded')),deadhead:num(v('lDeadhead')),
-    gross:num(v('lGross')),tolls:num(v('lTolls')),other:num(v('lOther')),fuelPrice:v('lFuelPrice'),mpg:v('lMpg'),notes:v('lNotes')};
-  if(!l.number){alert('Please enter a load number.');return}
-  const i=db.loads.findIndex(x=>x.id===id); if(i>=0) db.loads[i]=l; else db.loads.push(l);
-  closeModal('loadModal');persist();
-}
-function deleteLoad(id){if(confirm('Delete this load?')){db.loads=db.loads.filter(x=>x.id!==id);persist()}}
+      .form-grid {
 
-function openFuel(id=''){
-  const f=db.fuel.find(x=>x.id===id)||{id:'',date:today(),truck:db.settings.defaultTruck||'',full:true};
-  document.getElementById('fuelTitle').textContent=id?'Edit Fuel Entry':'Add Fuel Entry';
-  const map={fuelId:'id',fDate:'date',fTruck:'truck',fOdo:'odo',fGallons:'gallons',fCost:'cost',fLoad:'load',fStation:'station'};
-  Object.entries(map).forEach(([el,k])=>document.getElementById(el).value=f[k]??'');
-  document.getElementById('fFull').value=String(f.full!==false);
-  document.getElementById('fuelModal').classList.add('show');
-}
-function saveFuel(){
-  const id=v('fuelId')||uid();
-  const f={id,date:v('fDate'),truck:v('fTruck').trim(),odo:num(v('fOdo')),gallons:num(v('fGallons')),cost:num(v('fCost')),
-    load:v('fLoad').trim(),station:v('fStation'),full:v('fFull')==='true'};
-  if(!f.truck || !f.odo || !f.gallons || !f.cost){alert('Truck, odometer, gallons and total cost are required.');return}
-  const i=db.fuel.findIndex(x=>x.id===id); if(i>=0) db.fuel[i]=f; else db.fuel.push(f);
-  closeModal('fuelModal');persist();
-}
-function deleteFuel(id){if(confirm('Delete this fuel entry?')){db.fuel=db.fuel.filter(x=>x.id!==id);persist()}}
+        grid-template-columns: 1fr;
 
-function renderDashboard(){
-  let gross=0,dispatch=0,driver=0,net=0,miles=0;
-  db.loads.forEach(l=>{const c=loadCalc(l);gross+=num(l.gross);dispatch+=c.dispatcher;driver+=c.driver;net+=c.net;miles+=c.totalMiles});
-  set('kGross',money(gross));set('kDispatcher',money(dispatch));set('kDriver',money(driver));set('kNet',money(net));
-  set('kActive',db.loads.filter(l=>!['Delivered','Invoiced','Paid'].includes(l.status)).length);
-  set('kMiles',Math.round(miles).toLocaleString());
-  const mpg=fleetMpg();set('kMpg',mpg?mpg.toFixed(2):'—');
-  const fuelCost=db.fuel.reduce((s,x)=>s+num(x.cost),0);set('kFuel',money(fuelCost));
-  const recent=[...db.loads].sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,8);
-  document.getElementById('recentLoads').innerHTML=recent.length?recent.map(l=>{
-    const c=loadCalc(l); return `<tr><td><b>${esc(l.number)}</b></td><td>${esc(l.broker)}</td><td>${esc(l.origin)} → ${esc(l.destination)}</td>
-    <td><span class="badge">${esc(l.status)}</span></td><td>${money(l.gross)}</td><td>${c.totalMiles.toLocaleString()}</td><td class="${c.net>=0?'good':'bad'}">${money(c.net)}</td></tr>`}).join(''):
-    `<tr><td colspan="7" class="small">No loads yet. Add your first load.</td></tr>`;
-}
-function renderLoads(){
-  const rows=[...db.loads].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  document.getElementById('loadsBody').innerHTML=rows.length?rows.map(l=>{
-    const c=loadCalc(l);
-    const fuelLabel=c.actualFuel>0?money(c.actualFuel)+' actual':(c.fuel>0?money(c.fuel)+' est.':'—');
-    return `<tr><td><b>${esc(l.number)}</b></td><td>${esc(l.date)}</td><td>${esc(l.broker)}</td><td>${esc(l.origin)} → ${esc(l.destination)}</td>
-    <td><span class="badge">${esc(l.status)}</span></td><td>${num(l.loaded).toLocaleString()}</td><td>${num(l.deadhead).toLocaleString()}</td>
-    <td>${money(l.gross)}</td><td>${money(c.dispatcher)}</td><td>${money(c.driver)}</td><td>${fuelLabel}</td>
-    <td class="${c.net>=0?'good':'bad'}"><b>${money(c.net)}</b><div class="small">${c.margin.toFixed(1)}% margin</div></td>
-    <td><button onclick="openLoad('${l.id}')">Edit</button> <button class="danger" onclick="deleteLoad('${l.id}')">Delete</button></td></tr>`}).join(''):
-    `<tr><td colspan="13" class="small">No loads saved.</td></tr>`;
-}
-function renderFuel(){
-  const rows=computedFuel();
-  document.getElementById('fuelBody').innerHTML=rows.length?rows.map(f=>`<tr>
-    <td>${esc(f.date)}</td><td>${esc(f.truck)}</td><td>${num(f.odo).toLocaleString()}</td><td>${num(f.gallons).toFixed(3)}</td>
-    <td>${money(f.cost)}</td><td>${money(num(f.cost)/num(f.gallons))}</td><td>${f.full?'Yes':'No'}</td>
-    <td>${f.mpg?`<b class="good">${f.mpg.toFixed(2)}</b>`:'—'}</td><td>${esc(f.load)}</td>
-    <td><button onclick="openFuel('${f.id}')">Edit</button> <button class="danger" onclick="deleteFuel('${f.id}')">Delete</button></td></tr>`).join(''):
-    `<tr><td colspan="10" class="small">No fuel entries yet.</td></tr>`;
-  const mpg=fleetMpg();set('fuelAvgMpg',mpg?mpg.toFixed(2)+' MPG':'— MPG');
-  set('fuelTotalCost',money(db.fuel.reduce((s,x)=>s+num(x.cost),0)));
-  set('fuelTotalGallons',db.fuel.reduce((s,x)=>s+num(x.gallons),0).toFixed(1));
-}
-function renderSettings(){
-  document.getElementById('sDispatch').value=db.settings.dispatcherPct;
-  document.getElementById('sDriver').value=db.settings.driverRate;
-  document.getElementById('sMpg').value=db.settings.fallbackMpg;
-  document.getElementById('sFuelPrice').value=db.settings.fuelPrice;
-  document.getElementById('sCompany').value=db.settings.company;
-  document.getElementById('sTruck').value=db.settings.defaultTruck;
-}
-function saveSettings(){
-  db.settings={dispatcherPct:num(v('sDispatch')),driverRate:num(v('sDriver')),fallbackMpg:v('sMpg'),fuelPrice:v('sFuelPrice'),
-    company:v('sCompany'),defaultTruck:v('sTruck')};
-  persist();alert('Settings saved.');
-}
-function renderAll(){renderDashboard();renderLoads();renderFuel();renderSettings()}
-function set(id,val){document.getElementById(id).textContent=val}
-function v(id){return document.getElementById(id).value}
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+      }
 
-function download(name,text,type='text/plain'){
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href);
-}
-function csvCell(x){const s=String(x??'');return /[",\n]/.test(s)?'"'+s.replaceAll('"','""')+'"':s}
-function exportLoadsCsv(){
-  const h=['Load #','Date','Status','Customer/Broker','Origin','Destination','Truck','Loaded Miles','Deadhead Miles','Total Miles','Gross','Dispatcher Pay','Driver Pay','Fuel','Tolls','Other','Net','Margin %'];
-  const rows=db.loads.map(l=>{const c=loadCalc(l);return [l.number,l.date,l.status,l.broker,l.origin,l.destination,l.truck,l.loaded,l.deadhead,c.totalMiles,l.gross,c.dispatcher,c.driver,c.fuel,l.tolls,l.other,c.net,c.margin.toFixed(2)]});
-  download('alphalogix-loads.csv',[h,...rows].map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv');
-}
-function exportFuelCsv(){
-  const h=['Date','Truck','Odometer','Gallons','Total Cost','Price/Gallon','Full Tank','Calculated MPG','Load #','Station'];
-  const rows=computedFuel().map(f=>[f.date,f.truck,f.odo,f.gallons,f.cost,(num(f.cost)/num(f.gallons)).toFixed(3),f.full?'Yes':'No',f.mpg?f.mpg.toFixed(3):'',f.load,f.station]);
-  download('alphalogix-fuel.csv',[h,...rows].map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv');
-}
-function exportBackup(){download('alphalogix-tms-backup.json',JSON.stringify(db,null,2),'application/json')}
-function importBackup(e){
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);persist();alert('Backup imported.')}catch(err){alert('Invalid backup file.')}};r.readAsText(f);e.target.value='';
-}
-function resetAll(){if(confirm('This permanently erases all AlphaLogix TMS data stored in this browser. Continue?')){db=defaultDB();persist()}}
-renderAll();
-</script>
+      .full { grid-column: auto; }
 
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
-}
-</script>
+    }
+
+    @media (max-width: 500px) {
+
+      .cards {
+
+        grid-template-columns: 1fr 1fr;
+
+      }
+
+      .card strong {
+
+        font-size: 18px;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+
+  <section id="loginScreen" class="login">
+
+    <h1>AlphaLogix TMS</h1>
+
+    <p>Transportation Management System</p>
+
+    <label>Email</label>
+
+    <input
+
+      id="email"
+
+      type="email"
+
+      autocomplete="email"
+
+      placeholder="Email address"
+
+    >
+
+    <label>Password</label>
+
+    <input
+
+      id="password"
+
+      type="password"
+
+      autocomplete="current-password"
+
+      placeholder="Password"
+
+    >
+
+    <div class="login-buttons">
+
+      <button onclick="signIn()">Sign In</button>
+
+      <button class="secondary" onclick="createAccount()">
+
+        Create Account
+
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- MAIN APP -->
+
+  <section id="appScreen" class="hidden">
+
+    <header>
+
+      <div class="container header-row">
+
+        <div class="brand">
+
+          <h1>AlphaLogix TMS</h1>
+
+          <small>Reliable Service • Cloud Dispatch</small>
+
+        </div>
+
+        <div>
+
+          <span id="userEmail"></span>
+
+          <button class="secondary" onclick="signOut()">
+
+            Sign Out
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+    <main class="container">
+
+      <div class="rates">
+
+        Dispatcher pay: <strong>10% of load gross</strong>
+
+        &nbsp; • &nbsp;
+
+        Driver pay: <strong>$0.60 per total mile</strong>
+
+      </div>
+
+      <div class="cards">
+
+        <div class="card">
+
+          <small>Total Gross</small>
+
+          <strong id="totalGross">$0.00</strong>
+
+        </div>
+
+        <div class="card">
+
+          <small>Dispatcher Pay</small>
+
+          <strong id="totalDispatcher">$0.00</strong>
+
+        </div>
+
+        <div class="card">
+
+          <small>Driver Pay</small>
+
+          <strong id="totalDriver">$0.00</strong>
+
+        </div>
+
+        <div class="card">
+
+          <small>Estimated Net</small>
+
+          <strong id="totalNet">$0.00</strong>
+
+        </div>
+
+        <div class="card">
+
+          <small>Total Miles</small>
+
+          <strong id="totalMiles">0</strong>
+
+        </div>
+
+      </div>
+
+      <div class="toolbar">
+
+        <div>
+
+          <h2 style="margin-bottom:4px;">Loads</h2>
+
+          <small style="color:#9ca8c7;">
+
+            AlphaLogix Transport Solutions
+
+          </small>
+
+        </div>
+
+        <button onclick="newLoad()">
+
+          + Add Load
+
+        </button>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Load #</th>
+
+              <th>Date</th>
+
+              <th>Broker / Customer</th>
+
+              <th>Route</th>
+
+              <th>Status</th>
+
+              <th>Miles</th>
+
+              <th>Gross</th>
+
+              <th>Dispatcher</th>
+
+              <th>Driver</th>
+
+              <th>Est. Net</th>
+
+              <th>Actions</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="loadsBody">
+
+            <tr>
+
+              <td colspan="11">Loading...</td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </main>
+
+  </section>
+
+  <!-- ADD / EDIT LOAD -->
+
+  <section id="loadForm" class="modal hidden">
+
+    <div class="form-card">
+
+      <h2>Add / Edit Load</h2>
+
+      <input id="loadId" type="hidden">
+
+      <div class="form-grid">
+
+        <div>
+
+          <label>Load Number *</label>
+
+          <input id="loadNumber" placeholder="Example: ALX-1001">
+
+        </div>
+
+        <div>
+
+          <label>Date</label>
+
+          <input id="loadDate" type="date">
+
+        </div>
+
+        <div>
+
+          <label>Status</label>
+
+          <select id="loadStatus">
+
+            <option>Booked</option>
+
+            <option>Dispatched</option>
+
+            <option>In Transit</option>
+
+            <option>Delivered</option>
+
+            <option>Invoiced</option>
+
+            <option>Paid</option>
+
+            <option>Cancelled</option>
+
+          </select>
+
+        </div>
+
+        <div>
+
+          <label>Broker / Customer</label>
+
+          <input id="broker" placeholder="Broker or customer">
+
+        </div>
+
+        <div>
+
+          <label>Origin</label>
+
+          <input id="origin" placeholder="City, State">
+
+        </div>
+
+        <div>
+
+          <label>Destination</label>
+
+          <input id="destination" placeholder="City, State">
+
+        </div>
+
+        <div>
+
+          <label>Truck</label>
+
+          <input id="truck" placeholder="Truck / Unit #">
+
+        </div>
+
+        <div>
+
+          <label>Gross Load Amount ($)</label>
+
+          <input
+
+            id="grossAmount"
+
+            type="number"
+
+            step="0.01"
+
+            inputmode="decimal"
+
+            placeholder="0.00"
+
+          >
+
+        </div>
+
+        <div>
+
+          <label>Loaded Miles</label>
+
+          <input
+
+            id="loadedMiles"
+
+            type="number"
+
+            step="0.1"
+
+            inputmode="decimal"
+
+            placeholder="0"
+
+          >
+
+        </div>
+
+        <div>
+
+          <label>Deadhead Miles</label>
+
+          <input
+
+            id="deadheadMiles"
+
+            type="number"
+
+            step="0.1"
+
+            inputmode="decimal"
+
+            placeholder="0"
+
+          >
+
+        </div>
+
+        <div>
+
+          <label>Truck MPG</label>
+
+          <input
+
+            id="mpg"
+
+            type="number"
+
+            step="0.1"
+
+            inputmode="decimal"
+
+            placeholder="Enter when known"
+
+          >
+
+        </div>
+
+        <div>
+
+          <label>Fuel Price ($/gal)</label>
+
+          <input
+
+            id="fuelPrice"
+
+            type="number"
+
+            step="0.001"
+
+            inputmode="decimal"
+
+            placeholder="Example: 3.59"
+
+          >
+
+        </div>
+
+        <div>
+
+          <label>Tolls ($)</label>
+
+          <input
+
+            id="tolls"
+
+            type="number"
+
+            step="0.01"
+
+            inputmode="decimal"
+
+            placeholder="0.00"
+
+          >
+
+        </div>
+
+        <div>
+
+          <label>Other Expenses ($)</label>
+
+          <input
+
+            id="otherExpenses"
+
+            type="number"
+
+            step="0.01"
+
+            inputmode="decimal"
+
+            placeholder="0.00"
+
+          >
+
+        </div>
+
+        <div class="full">
+
+          <label>Notes</label>
+
+          <textarea
+
+            id="notes"
+
+            rows="4"
+
+            placeholder="Pickup numbers, delivery notes, broker information, etc."
+
+          ></textarea>
+
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+
+        <button
+
+          type="button"
+
+          class="secondary"
+
+          onclick="closeLoadForm()">
+
+          Cancel
+
+        </button>
+
+        <button
+
+          type="button"
+
+          onclick="saveLoad()">
+
+          Save Load
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- SUPABASE -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- ALPHALOGIX -->
+
+  <script src="config.js"></script>
+
+  <script src="app.js"></script>
 
 </body>
+
 </html>
